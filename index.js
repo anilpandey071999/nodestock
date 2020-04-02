@@ -1,10 +1,16 @@
+
 const express = require('express');
 const app = express();
 const exphbs  = require('express-handlebars');
 const path = require('path');
 const request = require('request');
+const bodyParser = require('body-parser')
 
 const PORT = process.env.PORT || 5000;
+
+
+//use body parser middleware
+app.use(bodyParser.urlencoded({ extended: false }));
 
 // set Handlebars middlesware
 app.engine('handlebars', exphbs());
@@ -21,8 +27,8 @@ app.set('view engine', 'handlebars');
 // 	});
 // };
 
-function call_api(finishedAPI) {
-	request('https://cloud.iexapis.com/stable/stock/fb/quote?token=pk_062031d20883444f9ea74e2610fe2011', { json: true }, (err, res, body) => {
+function call_api(finishedAPI,ticker) {
+	request('https://cloud.iexapis.com/stable/stock/' + ticker + '/quote?token=pk_062031d20883444f9ea74e2610fe2011', { json: true }, (err, res, body) => {
 	if (err) {return console.log(err);}
 	if (res.statusCode === 200){
 		//console.log(body);
@@ -31,13 +37,25 @@ function call_api(finishedAPI) {
 	});
 };
 
-//set handlebar routes
+//set handlebar index GET routes
 app.get('/', function (req, res) {
     call_api(function(doneAPI) {
     	res.render('home',{
     		stuff: doneAPI
     	});
-    });
+    },"fb");
+    
+});
+
+//set handlebar index POST routes
+app.post('/', function (req, res) {
+    call_api(function(doneAPI) {
+    	//posted_stuff = req.body.stock_ticker;
+    	res.render('home',{
+    		stuff: doneAPI,
+    		//posted_stuff: posted_stuff
+    	});
+    }, req.body.stock_ticker);
     
 });
 
